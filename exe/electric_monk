@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require "electric_monk"
+
+config_path = File.join(Dir.home, ".electric_monk.toml")
+ElectricMonk::CLI.new(config_path: config_path).run
