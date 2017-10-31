@@ -55,15 +55,16 @@ module ElectricMonk
 
     def ensure_existence
       if exists?
-        unless remote_correct?
+        if remote_correct?
+          reporter.info(name)
+        else
           reporter.warn("#{name}: Wrong remote '#{current_remote}'")
-          return
         end
       else
-        clone_project
+        reporter.wait("Cloning #{name}", name) do
+          clone_project
+        end
       end
-
-      reporter.info(name)
     end
 
     private
@@ -102,6 +103,26 @@ module ElectricMonk
 
     def warn(msg)
       puts "✗ #{msg}"
+    end
+
+    def wait(waiting_msg, done_msg)
+      chars = %w[⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏].cycle
+      show_spinner = true
+
+      spinner = Thread.new do
+        while show_spinner do
+          print "#{chars.next} #{waiting_msg}"
+          sleep 0.1
+          print "\b" * (waiting_msg.length + 2)
+        end
+        padding = waiting_msg.length > done_msg.length ? " " * (waiting_msg.length - done_msg.length) : ""
+        info(done_msg + padding)
+      end
+
+      yield.tap {
+        show_spinner = false
+        spinner.join
+      }
     end
   end
 end

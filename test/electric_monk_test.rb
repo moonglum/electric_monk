@@ -9,7 +9,10 @@ class ElectricMonkTest < Minitest::Test
 
   def test_non_existent_repository
     reporter = Minitest::Mock.new
-    reporter.expect :info, nil, ["test-name"]
+    reporter.expect :wait, nil do |waiting_msg, done_msg, &blk|
+      blk.call
+      waiting_msg == "Cloning test-name" && done_msg == "test-name"
+    end
 
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
 
