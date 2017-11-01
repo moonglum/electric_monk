@@ -9,10 +9,9 @@ class ElectricMonkTest < Minitest::Test
 
   def test_non_existent_repository
     reporter = Minitest::Mock.new
-    reporter.expect :wait, nil do |waiting_msg, done_msg, &blk|
-      blk.call
-      waiting_msg == "Cloning test-name" && done_msg == "test-name"
-    end
+    reporter.expect :start, nil, ["test-name"]
+    reporter.expect :update_progress, nil, ["Cloning test-name"]
+    reporter.expect :succeed, nil, ["test-name"]
 
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
 
@@ -22,7 +21,8 @@ class ElectricMonkTest < Minitest::Test
 
   def test_existent_repository
     reporter = Minitest::Mock.new
-    reporter.expect :info, nil, ["test-name"]
+    reporter.expect :start, nil, ["test-name"]
+    reporter.expect :succeed, nil, ["test-name"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
@@ -33,7 +33,8 @@ class ElectricMonkTest < Minitest::Test
 
   def test_existent_repository_with_wrong_remote
     reporter = Minitest::Mock.new
-    reporter.expect :warn, nil, ["test-name: Wrong remote 'git@github.com:moonglum/false.git'"]
+    reporter.expect :start, nil, ["test-name"]
+    reporter.expect :fail, nil, ["test-name: Wrong remote 'git@github.com:moonglum/false.git'"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "git remote set-url origin git@github.com:moonglum/false.git", chdir: "#{@dir}/test-name"
@@ -44,7 +45,8 @@ class ElectricMonkTest < Minitest::Test
 
   def test_existent_repository_with_dirty_files
     reporter = Minitest::Mock.new
-    reporter.expect :warn, nil, ["test-name: 2 dirty files"]
+    reporter.expect :start, nil, ["test-name"]
+    reporter.expect :fail, nil, ["test-name: 2 dirty files"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "touch bla.txt", chdir: "#{@dir}/test-name"
@@ -56,7 +58,8 @@ class ElectricMonkTest < Minitest::Test
 
   def test_existent_repository_with_unpushed_commits
     reporter = Minitest::Mock.new
-    reporter.expect :warn, nil, ["test-name: 1 unpushed commits"]
+    reporter.expect :start, nil, ["test-name"]
+    reporter.expect :fail, nil, ["test-name: 1 unpushed commits"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "git commit --allow-empty --no-gpg-sign -m 'An amazing commit that would be lost'", chdir: "#{@dir}/test-name"

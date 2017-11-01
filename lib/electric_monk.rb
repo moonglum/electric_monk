@@ -54,22 +54,24 @@ module ElectricMonk
     end
 
     def ensure_existence
+      reporter.start(name)
+
       if exists?
         if remote_correct?
           if dirty_files?
-            reporter.warn("#{name}: #{dirty_files} dirty files")
+            reporter.fail("#{name}: #{dirty_files} dirty files")
           elsif unpushed_commits?
-            reporter.warn("#{name}: #{unpushed_commits} unpushed commits")
+            reporter.fail("#{name}: #{unpushed_commits} unpushed commits")
           else
-            reporter.info(name)
+            reporter.succeed(name)
           end
         else
-          reporter.warn("#{name}: Wrong remote '#{current_remote}'")
+          reporter.fail("#{name}: Wrong remote '#{current_remote}'")
         end
       else
-        reporter.wait("Cloning #{name}", name) do
-          clone_project
-        end
+        reporter.update_progress("Cloning #{name}")
+        clone_project
+        reporter.succeed(name)
       end
     end
 
@@ -119,32 +121,34 @@ module ElectricMonk
   class Reporter
     include Singleton
 
-    def info(msg)
-      puts "✓ #{msg}"
-    end
+    def start(task_name)
+      @task_name = task_name
+      @final_message = nil
 
-    def warn(msg)
-      puts "✗ #{msg}"
-    end
-
-    def wait(waiting_msg, done_msg)
-      chars = %w[⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏].cycle
-      show_spinner = true
-
-      spinner = Thread.new do
-        while show_spinner do
-          print "#{chars.next} #{waiting_msg}"
+      @spinner = Thread.new do
+        chars = %w[⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏].cycle
+        until @final_message do
+          current_task_name = @task_name
+          print "#{chars.next} #{current_task_name}"
           sleep 0.1
-          print "\b" * (waiting_msg.length + 2)
+          print "\b \b" * (current_task_name.length + 2)
         end
-        padding = waiting_msg.length > done_msg.length ? " " * (waiting_msg.length - done_msg.length) : ""
-        info(done_msg + padding)
+        puts @final_message
       end
+    end
 
-      yield.tap {
-        show_spinner = false
-        spinner.join
-      }
+    def update_progress(task_name)
+      @task_name = task_name
+    end
+
+    def succeed(msg)
+      @final_message = "✓ #{msg}"
+      @spinner.join
+    end
+
+    def fail(msg)
+      @final_message = "✗ #{msg}"
+      @spinner.join
     end
   end
 end
