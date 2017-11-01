@@ -46,7 +46,7 @@ class ElectricMonkTest < Minitest::Test
   def test_existent_repository_with_dirty_files
     reporter = Minitest::Mock.new
     reporter.expect :start, nil, ["test-name"]
-    reporter.expect :fail, nil, ["test-name: 2 dirty files"]
+    reporter.expect :fail, nil, ["test-name: 2 dirty files and 0 unpushed commits"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "touch bla.txt", chdir: "#{@dir}/test-name"
@@ -59,7 +59,7 @@ class ElectricMonkTest < Minitest::Test
   def test_existent_repository_with_unpushed_commits
     reporter = Minitest::Mock.new
     reporter.expect :start, nil, ["test-name"]
-    reporter.expect :fail, nil, ["test-name: 1 unpushed commits"]
+    reporter.expect :fail, nil, ["test-name: 0 dirty files and 1 unpushed commits"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "git commit --allow-empty --no-gpg-sign -m 'An amazing commit that would be lost'", chdir: "#{@dir}/test-name"

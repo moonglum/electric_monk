@@ -58,10 +58,8 @@ module ElectricMonk
 
       if exists?
         if remote_correct?
-          if dirty_files?
-            reporter.fail("#{name}: #{dirty_files} dirty files")
-          elsif unpushed_commits?
-            reporter.fail("#{name}: #{unpushed_commits} unpushed commits")
+          if dirty_files? || unpushed_commits?
+            reporter.fail("#{name}: #{dirty_files} dirty files and #{unpushed_commits} unpushed commits")
           else
             reporter.succeed(name)
           end
