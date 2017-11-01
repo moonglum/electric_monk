@@ -23,8 +23,12 @@ origin = "git@github.com:moonglum/electric_monk.git"
 ```
 
 Then run `electric_monk` to make sure, all projects have been cloned to your root directory. If
-one is missing, `electric_monk` will clone the repository for you. If the remote is different from
-what you have configured, it will show a warning.
+one is missing, `electric_monk` will clone the repository for you. For every existing repository it
+will show a warning if:
+
+* The remote is different from what you have configured
+* There are uncommitted changes (aka. dirty files)
+* There are unpushed branches
 
 ## Development
 

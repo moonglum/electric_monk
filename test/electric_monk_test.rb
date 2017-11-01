@@ -39,7 +39,29 @@ class ElectricMonkTest < Minitest::Test
     execute "git remote set-url origin git@github.com:moonglum/false.git", chdir: "#{@dir}/test-name"
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
 
-    assert_equal "# test\nA test repository (please ignore me)", read_readme
+    reporter.verify
+  end
+
+  def test_existent_repository_with_dirty_files
+    reporter = Minitest::Mock.new
+    reporter.expect :warn, nil, ["test-name: 2 dirty files"]
+
+    execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
+    execute "touch bla.txt", chdir: "#{@dir}/test-name"
+    execute "echo 'HI' >> README.md", chdir: "#{@dir}/test-name"
+    ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
+
+    reporter.verify
+  end
+
+  def test_existent_repository_with_unpushed_commits
+    reporter = Minitest::Mock.new
+    reporter.expect :warn, nil, ["test-name: 1 unpushed commits"]
+
+    execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
+    execute "git commit --allow-empty --no-gpg-sign -m 'An amazing commit that would be lost'", chdir: "#{@dir}/test-name"
+    ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
+
     reporter.verify
   end
 

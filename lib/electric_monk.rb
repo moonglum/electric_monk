@@ -56,7 +56,13 @@ module ElectricMonk
     def ensure_existence
       if exists?
         if remote_correct?
-          reporter.info(name)
+          if dirty_files?
+            reporter.warn("#{name}: #{dirty_files} dirty files")
+          elsif unpushed_commits?
+            reporter.warn("#{name}: #{unpushed_commits} unpushed commits")
+          else
+            reporter.info(name)
+          end
         else
           reporter.warn("#{name}: Wrong remote '#{current_remote}'")
         end
@@ -68,6 +74,22 @@ module ElectricMonk
     end
 
     private
+
+    def dirty_files?
+      dirty_files > 0
+    end
+
+    def dirty_files
+      execute("git status --short", chdir: path).lines.length
+    end
+
+    def unpushed_commits?
+      unpushed_commits > 0
+    end
+
+    def unpushed_commits
+      execute("git log --oneline --branches --not --remotes", chdir: path).lines.length
+    end
 
     def current_remote
       execute("git remote get-url origin", chdir: path)
