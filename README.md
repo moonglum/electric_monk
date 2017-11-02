@@ -1,11 +1,14 @@
 # ElectricMonk
+[![Gem](https://img.shields.io/gem/v/electric_monk.svg?style=flat-square)](https://rubygems.org/gems/electric_monk)
 
 Manage your git-based projects with a CLI: It assumes that you have a directory with your
 repositories and will clone/update them for you and report their status.
 
+[![asciicast](https://asciinema.org/a/145472.png)](https://asciinema.org/a/145472)
+
 ## Installation
 
-Install it as a gem:
+You need Ruby for this to work. Install it as a gem:
 
     $ gem install electric_monk
 
