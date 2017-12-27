@@ -12,6 +12,8 @@ class ElectricMonkTest < Minitest::Test
     reporter.expect :start, nil, ["test-name"]
     reporter.expect :update_progress, nil, ["Cloning test-name"]
     reporter.expect :succeed, nil, ["test-name"]
+    reporter.expect :start, nil, ["Untracked projects"]
+    reporter.expect :succeed, nil, ["No untracked projects"]
 
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
 
@@ -23,6 +25,8 @@ class ElectricMonkTest < Minitest::Test
     reporter = Minitest::Mock.new
     reporter.expect :start, nil, ["test-name"]
     reporter.expect :succeed, nil, ["test-name"]
+    reporter.expect :start, nil, ["Untracked projects"]
+    reporter.expect :succeed, nil, ["No untracked projects"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
@@ -35,6 +39,8 @@ class ElectricMonkTest < Minitest::Test
     reporter = Minitest::Mock.new
     reporter.expect :start, nil, ["test-name"]
     reporter.expect :fail, nil, ["test-name: Wrong remote 'git@github.com:moonglum/false.git'"]
+    reporter.expect :start, nil, ["Untracked projects"]
+    reporter.expect :succeed, nil, ["No untracked projects"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "git remote set-url origin git@github.com:moonglum/false.git", chdir: "#{@dir}/test-name"
@@ -47,6 +53,8 @@ class ElectricMonkTest < Minitest::Test
     reporter = Minitest::Mock.new
     reporter.expect :start, nil, ["test-name"]
     reporter.expect :fail, nil, ["test-name: 2 dirty files and 0 unpushed commits"]
+    reporter.expect :start, nil, ["Untracked projects"]
+    reporter.expect :succeed, nil, ["No untracked projects"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "touch bla.txt", chdir: "#{@dir}/test-name"
@@ -60,9 +68,25 @@ class ElectricMonkTest < Minitest::Test
     reporter = Minitest::Mock.new
     reporter.expect :start, nil, ["test-name"]
     reporter.expect :fail, nil, ["test-name: 0 dirty files and 1 unpushed commits"]
+    reporter.expect :start, nil, ["Untracked projects"]
+    reporter.expect :succeed, nil, ["No untracked projects"]
 
     execute "git clone git@github.com:moonglum/test.git test-name", chdir: @dir
     execute "git commit --allow-empty --no-gpg-sign -m 'An amazing commit that would be lost'", chdir: "#{@dir}/test-name"
+    ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
+
+    reporter.verify
+  end
+
+  def test_untracked_projects
+    reporter = Minitest::Mock.new
+    reporter.expect :start, nil, ["test-name"]
+    reporter.expect :update_progress, nil, ["Cloning test-name"]
+    reporter.expect :succeed, nil, ["test-name"]
+    reporter.expect :start, nil, ["Untracked projects"]
+    reporter.expect :fail, nil, ["1 untracked projects: somefolder"]
+
+    execute "mkdir somefolder", chdir: @dir
     ElectricMonk::CLI.new(config_path: @config_path, reporter: reporter).run
 
     reporter.verify

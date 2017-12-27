@@ -28,6 +28,17 @@ module ElectricMonk
           reporter.succeed(project.name)
         end
       end
+
+      reporter.start("Untracked projects")
+      if untracked_projects.empty?
+        reporter.succeed("No untracked projects")
+      else
+        reporter.fail "#{untracked_projects.size} untracked projects: #{untracked_projects.join(', ')}"
+      end
+    end
+
+    def untracked_projects
+      @untracked_projects ||= Dir.entries(config.root) - config.projects.map(&:name) - [".", ".."]
     end
   end
 
