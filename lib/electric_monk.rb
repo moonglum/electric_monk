@@ -35,6 +35,8 @@ module ElectricMonk
       else
         reporter.fail "#{untracked_projects.size} untracked projects: #{untracked_projects.join(', ')}"
       end
+
+      reporter.report
     end
 
     def untracked_projects
@@ -156,8 +158,31 @@ module ElectricMonk
     end
 
     def fail(msg)
+      increase_failures
       @final_message = "✗ #{msg}"
       @spinner.join
+    end
+
+    def report
+      puts
+
+      if @failures.nil?
+        puts "Everything ok"
+      else
+        puts "#{@failures} failures"
+        # I probably do not belong here
+        exit(1)
+      end
+    end
+
+    private
+
+    def increase_failures
+      if @failures.nil?
+        @failures = 1
+      else
+        @failures += 1
+      end
     end
   end
 end
