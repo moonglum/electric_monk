@@ -1,6 +1,8 @@
 # ElectricMonk
 [![Gem](https://img.shields.io/gem/v/electric_monk.svg?style=flat-square)](https://rubygems.org/gems/electric_monk)
 
+**Deprecated: I replaced this with [two small shell scripts](https://github.com/moonglum/dotfiles/commit/a8bc4d5dcbb9f2342cf20284555e2ce2209d89c1)**
+
 Manage your git-based projects with a CLI: It assumes that you have a directory with your
 repositories and will clone/update them for you and report their status.
 
